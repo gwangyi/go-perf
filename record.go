@@ -737,7 +737,7 @@ func (rr *ReadGroupRecord) DecodeFrom(raw *RawRecord, ev *Event) error {
 	rr.RecordHeader = raw.Header
 	f := raw.fields()
 	f.uint32(&rr.Pid, &rr.Tid)
-	f.groupCount(&rr.GroupCount, ev.a.CountFormat)
+	f.groupCount(&rr.GroupCount, ev.a.CountFormat, ev.labelById)
 	f.idCond(ev.a.Options.SampleIDAll, &rr.SampleID, ev.a.SampleFormat)
 	return nil
 }
@@ -932,6 +932,8 @@ func (sr *SampleGroupRecord) DecodeFrom(raw *RawRecord, ev *Event) error {
 	f.uint64Cond(ev.a.SampleFormat.ID, &sr.ID)
 	f.uint64Cond(ev.a.SampleFormat.StreamID, &sr.StreamID)
 
+	labelById := ev.labelById
+
 	// If we have a StreamID and it is different from our
 	// own ID, then the output from the event we're interested
 	// in was redirected to ev. We must switch to that event
@@ -946,7 +948,7 @@ func (sr *SampleGroupRecord) DecodeFrom(raw *RawRecord, ev *Event) error {
 	f.uint32Cond(ev.a.SampleFormat.CPU, &sr.CPU, &reserved)
 	f.uint64Cond(ev.a.SampleFormat.Period, &sr.Period)
 	if ev.a.SampleFormat.Count {
-		f.groupCount(&sr.Count, ev.a.CountFormat)
+		f.groupCount(&sr.Count, ev.a.CountFormat, labelById)
 	}
 	if ev.a.SampleFormat.Callchain {
 		var nr uint64

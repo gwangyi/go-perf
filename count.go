@@ -127,6 +127,17 @@ func (gc GroupCount) PrintValues(w io.Writer) error {
 	return ew.err
 }
 
+func (ev *Event) labelById(id uint64) string {
+	if id == ev.id {
+		return ev.a.Label
+	}
+	follower, ok := ev.groupByID[id]
+	if !ok {
+		return ""
+	}
+	return follower.a.Label
+}
+
 var errNotGroup = errors.New("calling ReadGroupCount on non-group Event")
 
 // ReadGroupCount reads the measurements associated with ev. If the Event
@@ -148,11 +159,7 @@ func (ev *Event) ReadGroupCount() (GroupCount, error) {
 	}
 
 	f := fields(buf)
-	f.groupCount(&gc, ev.a.CountFormat)
-	gc.Values[0].Label = ev.a.Label
-	for i := 0; i < len(ev.group); i++ {
-		gc.Values[i+1].Label = ev.group[i].a.Label
-	}
+	f.groupCount(&gc, ev.a.CountFormat, ev.labelById)
 
 	return gc, nil
 }

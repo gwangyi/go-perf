@@ -1344,7 +1344,7 @@ func (f *fields) count(c *Count, cfmt CountFormat) {
 }
 
 // groupCount decodes a GroupCount into gc.
-func (f *fields) groupCount(gc *GroupCount, cfmt CountFormat) {
+func (f *fields) groupCount(gc *GroupCount, cfmt CountFormat, labelById func(uint64) string) {
 	var nr uint64
 	f.uint64(&nr)
 	if cfmt.Enabled {
@@ -1360,6 +1360,7 @@ func (f *fields) groupCount(gc *GroupCount, cfmt CountFormat) {
 	for i := 0; i < int(nr); i++ {
 		f.uint64(&gc.Values[i].Value)
 		f.uint64Cond(cfmt.ID, &gc.Values[i].ID)
+		gc.Values[i].Label = labelById(gc.Values[i].ID)
 	}
 }
 
